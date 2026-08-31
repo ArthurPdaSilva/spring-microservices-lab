@@ -18,6 +18,9 @@ spring-cloud-config-server :8888
           v
 greeting-service :8080
 
+naming-server :8671
+          |
+          v
 book-service-microsservice :8100 ---> exchange-service-microsservice :8000 ---> MySQL
 ```
 
@@ -31,6 +34,10 @@ Servico REST simples que consome configuracoes do Config Server e expoe:
 
 - `GET /greeting`
 - `GET /greeting/properties?greeting=Hello&defaultValue=World`
+
+### Naming Server
+
+Service discovery com Eureka, usado para registrar microsservicos durante os estudos de arquitetura distribuida.
 
 ### Exchange Service
 

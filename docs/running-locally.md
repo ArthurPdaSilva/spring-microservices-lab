@@ -10,6 +10,25 @@ Alguns servicos usam Spring Boot 4.x e Java 21 nos `pom.xml`; use Java 21 se qui
 
 ## Infraestrutura
 
+Para subir todos os servicos e a infraestrutura pela raiz do monorepo:
+
+```bash
+docker compose up --build
+```
+
+Isso cria imagens para os servicos Spring Boot usando o `Dockerfile` raiz e sobe MySQL, PostgreSQL e RabbitMQ.
+
+O `book-service` e o `exchange-service` usam `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://naming-server:8671/eureka/` no Compose para registrar no Eureka dentro da rede Docker. Sem essa variavel, o fallback `localhost:8671` aponta para o proprio container do servico, nao para o container do Eureka.
+
+Se o MySQL ja tiver sido criado antes das migrations do Flyway, pode ocorrer erro de schema nao vazio sem tabela de historico. O `exchange-service` usa `baseline-on-migrate=true`, `baseline-version=0` e a tabela `flyway_schema_history_exchange` para conseguir iniciar nesse cenario. Se quiser reiniciar tudo do zero, remova os containers e volumes:
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+Se quiser executar os servicos manualmente pelo Maven, suba apenas bancos e RabbitMQ:
+
 Suba bancos e RabbitMQ pela raiz do monorepo:
 
 ```bash

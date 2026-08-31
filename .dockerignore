@@ -1,0 +1,14 @@
+.git
+.idea
+.vscode
+**/target
+**/build
+**/out
+**/.gradle
+**/.env
+**/.env.*
+*.log
+*.iml
+mysql_data
+postgres_data
+rabbitmq_data

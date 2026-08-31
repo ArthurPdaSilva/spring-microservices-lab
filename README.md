@@ -20,10 +20,12 @@ spring-microservices-lab/
     running-locally.md                 # Guia de execucao local
   services/
     spring-cloud-config-server/        # Servidor central de configuracao
+    naming-server/                     # Service discovery com Eureka
     greeting-service/                  # Servico REST simples com propriedades externas
     exchange-service-microsservice/    # API de cambio com MySQL e Flyway
     book-service-microsservice/        # API de livros que consulta cambio via OpenFeign
     user-email-service/                # Microsservicos de usuario e email com RabbitMQ e PostgreSQL
+  docker-compose.yml                   # Infraestrutura e servicos para docker compose up --build
   docker-compose.infra.yml             # Infraestrutura local compartilhada
 ```
 
@@ -32,6 +34,7 @@ spring-microservices-lab/
 | Servico | Porta padrao | Papel |
 |---|---:|---|
 | `spring-cloud-config-server` | 8888 | Expor configuracoes centralizadas do diretorio `config-repo/spring-config-server`. |
+| `naming-server` | 8671 | Service discovery com Eureka para registro de microsservicos. |
 | `greeting-service` | 8080 | Consumir configuracoes externas e expor endpoints simples de saudacao. |
 | `exchange-service-microsservice` | 8000 | Consultar taxas de cambio persistidas em MySQL, com migrations Flyway. |
 | `book-service-microsservice` | 8100 | Buscar livros no MySQL e calcular preco convertido consultando o Exchange Service via OpenFeign. |
@@ -52,7 +55,13 @@ spring-microservices-lab/
 
 ## Execucao rapida
 
-Suba a infraestrutura local quando precisar de MySQL, PostgreSQL ou RabbitMQ:
+Para subir infraestrutura e servicos pela raiz do monorepo:
+
+```bash
+docker compose up --build
+```
+
+Se quiser subir apenas MySQL, PostgreSQL e RabbitMQ:
 
 ```bash
 docker compose -f docker-compose.infra.yml up -d

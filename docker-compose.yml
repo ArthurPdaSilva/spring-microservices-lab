@@ -1,0 +1,198 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: spring-microservices-lab-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: microservice_section_7
+      MYSQL_USER: spring
+      MYSQL_PASSWORD: spring
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  postgres:
+    image: postgres:17
+    container_name: spring-microservices-lab-postgres
+    environment:
+      POSTGRES_DB: user_email_service
+      POSTGRES_USER: spring
+      POSTGRES_PASSWORD: spring
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spring -d user_email_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: spring-microservices-lab-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  config-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_DIR: services/spring-cloud-config-server
+    container_name: spring-microservices-lab-config-server
+    environment:
+      SPRING_PROFILES_ACTIVE: native
+      CONFIG_NATIVE_SEARCH_LOCATIONS: file:/config-repo
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./config-repo/spring-config-server:/config-repo:ro
+
+  naming-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_DIR: services/naming-server
+    container_name: spring-microservices-lab-naming-server
+    ports:
+      - "8671:8671"
+
+  greeting-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_DIR: services/greeting-service
+    container_name: spring-microservices-lab-greeting-service
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      SPRING_CLOUD_CONFIG_PROFILE: br
+    ports:
+      - "8080:8080"
+    depends_on:
+      - config-server
+
+  exchange-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_DIR: services/exchange-service-microsservice
+    container_name: spring-microservices-lab-exchange-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/microservice_section_7
+      SPRING_DATASOURCE_USERNAME: spring
+      SPRING_DATASOURCE_PASSWORD: spring
+      SPRING_FLYWAY_TABLE: flyway_schema_history_exchange
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
+      SPRING_FLYWAY_BASELINE_VERSION: "0"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://naming-server:8671/eureka/
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      naming-server:
+        condition: service_started
+
+  book-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_DIR: services/book-service-microsservice
+    container_name: spring-microservices-lab-book-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/microservice_section_7
+      SPRING_DATASOURCE_USERNAME: spring
+      SPRING_DATASOURCE_PASSWORD: spring
+      EXCHANGE_SERVICE_URL: http://exchange-service:8000
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://naming-server:8671/eureka/
+    ports:
+      - "8100:8100"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      exchange-service:
+        condition: service_started
+      naming-server:
+        condition: service_started
+
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_DIR: services/user-email-service/user
+    container_name: spring-microservices-lab-user-service
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/user_email_service
+      SPRING_DATASOURCE_USERNAME: spring
+      SPRING_DATASOURCE_PASSWORD: spring
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_RABBITMQ_ADDRESSES: amqp://guest:guest@rabbitmq:5672
+      BROKER_QUEUE_EMAIL_NAME: default.email
+      SPRING_MAIL_HOST: smtp.example.com
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_USERNAME: no-reply@example.com
+      SPRING_MAIL_PASSWORD: change-me
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  email-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_DIR: services/user-email-service/email
+    container_name: spring-microservices-lab-email-service
+    environment:
+      SERVER_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/user_email_service
+      SPRING_DATASOURCE_USERNAME: spring
+      SPRING_DATASOURCE_PASSWORD: spring
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_RABBITMQ_ADDRESSES: amqp://guest:guest@rabbitmq:5672
+      BROKER_QUEUE_EMAIL_NAME: default.email
+      SPRING_MAIL_HOST: smtp.example.com
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_USERNAME: no-reply@example.com
+      SPRING_MAIL_PASSWORD: change-me
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  postgres_data:
+  rabbitmq_data:

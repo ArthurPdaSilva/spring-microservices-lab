@@ -17,4 +17,8 @@ spring:
       hibernate:
     open-in-view: false
 server:
-  port: 8100
+  port: 8101
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8671/eureka/}
