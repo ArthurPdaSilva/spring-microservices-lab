@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: exchange-service-microsservice
+  datasource:
+    url: jdbc:mysql://localhost:3306/microservice_section_7
+    username: spring
+    password: spring
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      # Vou utilizar none para não criar as tabelas automaticamente, pois já tenho o script ddl.sql que cria as tabelas
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+    open-in-view: false
+server:
+  port: 8000

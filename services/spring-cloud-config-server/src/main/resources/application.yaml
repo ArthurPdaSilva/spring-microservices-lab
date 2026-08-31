@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: spring-cloud-config-server
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:native}
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: ${CONFIG_NATIVE_SEARCH_LOCATIONS:file:../../config-repo/spring-config-server}
+        git:
+          uri: ${CONFIG_REPO_URI:file:../../config-repo/spring-config-server}
+          default-label: ${CONFIG_REPO_LABEL:main}
+          search-paths:
+            - ${CONFIG_REPO_SEARCH_PATH:config-repo/spring-config-server}
+            - ${CONFIG_REPO_SEARCH_PATH:config-repo/spring-config-server}/greeting-service
+          #username: arthurpdasilva
+          #password: password
+server:
+  port: 8888

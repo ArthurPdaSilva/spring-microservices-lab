@@ -1,0 +1,46 @@
+services:
+  mysql:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: microservice_section_7
+      MYSQL_USER: spring
+      MYSQL_PASSWORD: spring
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  mysql-workbench:
+    image: lscr.io/linuxserver/mysql-workbench:latest
+    container_name: mysql-workbench
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - IPC_LOCK
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: America/Sao_Paulo
+    ports:
+      - "3000:3000"
+    volumes:
+      - mysql_workbench_data:/config
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  mysql_workbench_data:
