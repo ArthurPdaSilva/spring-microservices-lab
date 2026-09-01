@@ -48,7 +48,7 @@ public class BookService {
                 book.getLaunchDate().toString(),
                 exchangeResponse.convertedValue(),
                 currency,
-                "PORT: " + instanceInformationService.getPort()
+                "PORT: " + instanceInformationService.getPort() + " - EXCHANGE PORT: " + exchangeResponse.environment()
         );
     }
 }

@@ -19,7 +19,7 @@ spring:
       hibernate:
     open-in-view: false
 server:
-  port: 8000
+  port: 8001
 eureka:
   client:
     service-url:
