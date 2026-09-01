@@ -73,6 +73,21 @@ services:
     ports:
       - "8671:8671"
 
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_DIR: services/api-gateway
+    container_name: spring-microservices-lab-api-gateway
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://naming-server:8671/eureka/
+    ports:
+      - "8765:8765"
+    depends_on:
+      naming-server:
+        condition: service_started
+
   greeting-service:
     build:
       context: .
