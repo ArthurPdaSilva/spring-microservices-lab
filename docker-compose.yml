@@ -111,6 +111,7 @@ services:
         SERVICE_DIR: services/exchange-service-microsservice
     container_name: spring-microservices-lab-exchange-service
     environment:
+      SERVER_PORT: 8000
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/microservice_section_7
       SPRING_DATASOURCE_USERNAME: spring
       SPRING_DATASOURCE_PASSWORD: spring
@@ -126,6 +127,30 @@ services:
       naming-server:
         condition: service_started
 
+  exchange-service-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_DIR: services/exchange-service-microsservice
+    container_name: spring-microservices-lab-exchange-service-2
+    environment:
+      SERVER_PORT: 8001
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/microservice_section_7
+      SPRING_DATASOURCE_USERNAME: spring
+      SPRING_DATASOURCE_PASSWORD: spring
+      SPRING_FLYWAY_TABLE: flyway_schema_history_exchange
+      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
+      SPRING_FLYWAY_BASELINE_VERSION: "0"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://naming-server:8671/eureka/
+    ports:
+      - "8001:8001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      naming-server:
+        condition: service_started
+
   book-service:
     build:
       context: .
@@ -134,6 +159,7 @@ services:
         SERVICE_DIR: services/book-service-microsservice
     container_name: spring-microservices-lab-book-service
     environment:
+      SERVER_PORT: 8100
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/microservice_section_7
       SPRING_DATASOURCE_USERNAME: spring
       SPRING_DATASOURCE_PASSWORD: spring
@@ -145,6 +171,31 @@ services:
       mysql:
         condition: service_healthy
       exchange-service:
+        condition: service_started
+      naming-server:
+        condition: service_started
+
+  book-service-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_DIR: services/book-service-microsservice
+    container_name: spring-microservices-lab-book-service-2
+    environment:
+      SERVER_PORT: 8101
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/microservice_section_7
+      SPRING_DATASOURCE_USERNAME: spring
+      SPRING_DATASOURCE_PASSWORD: spring
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://naming-server:8671/eureka/
+    ports:
+      - "8101:8101"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      exchange-service:
+        condition: service_started
+      exchange-service-2:
         condition: service_started
       naming-server:
         condition: service_started

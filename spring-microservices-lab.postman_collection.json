@@ -1,0 +1,280 @@
+{
+  "info": {
+    "_postman_id": "c7f3b0bc-4f31-4e49-83a0-cc495482258c",
+    "name": "Spring Microservices Lab",
+    "description": "Collection JSON importavel no Bruno. Contem chamadas via API Gateway e chamadas diretas para os servicos do laboratorio.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "gatewayBaseUrl",
+      "value": "http://localhost:8765",
+      "type": "string"
+    },
+    {
+      "key": "bookBaseUrl",
+      "value": "http://localhost:8100",
+      "type": "string"
+    },
+    {
+      "key": "exchangeBaseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "greetingBaseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "userBaseUrl",
+      "value": "http://localhost:8081",
+      "type": "string"
+    },
+    {
+      "key": "eurekaBaseUrl",
+      "value": "http://localhost:8671",
+      "type": "string"
+    },
+    {
+      "key": "configServerBaseUrl",
+      "value": "http://localhost:8888",
+      "type": "string"
+    },
+    {
+      "key": "bookId",
+      "value": "2",
+      "type": "string"
+    },
+    {
+      "key": "currency",
+      "value": "BRL",
+      "type": "string"
+    },
+    {
+      "key": "amount",
+      "value": "10.00",
+      "type": "string"
+    },
+    {
+      "key": "fromCurrency",
+      "value": "USD",
+      "type": "string"
+    },
+    {
+      "key": "toCurrency",
+      "value": "BRL",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "API Gateway",
+      "description": "Rotas criadas automaticamente pelo Discovery Locator. Aguarde o Eureka atualizar antes da primeira chamada.",
+      "item": [
+        {
+          "name": "Book Service via Gateway",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gatewayBaseUrl}}/book-service-microsservice/book-service/{{bookId}}/{{currency}}",
+            "description": "Busca um livro e converte seu preco usando o Exchange Service."
+          },
+          "response": []
+        },
+        {
+          "name": "Exchange Service via Gateway",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gatewayBaseUrl}}/exchange-service-microsservice/exchange-service?amount={{amount}}&from={{fromCurrency}}&to={{toCurrency}}",
+            "description": "Converte um valor por meio da rota descoberta no Eureka."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Book Service",
+      "item": [
+        {
+          "name": "Find Book",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{bookBaseUrl}}/book-service/{{bookId}}/{{currency}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{bookBaseUrl}}/actuator/health"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Exchange Service",
+      "item": [
+        {
+          "name": "Convert Currency",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{exchangeBaseUrl}}/exchange-service?amount={{amount}}&from={{fromCurrency}}&to={{toCurrency}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{exchangeBaseUrl}}/actuator/health"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Greeting Service",
+      "item": [
+        {
+          "name": "Greeting",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{greetingBaseUrl}}/greeting"
+          },
+          "response": []
+        },
+        {
+          "name": "Greeting Properties",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{greetingBaseUrl}}/greeting/properties?greeting=Ola&defaultValue=Mundo"
+          },
+          "response": []
+        },
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{greetingBaseUrl}}/actuator/health"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User Service",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Arthur\",\n  \"email\": \"arthur@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{userBaseUrl}}/users"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Infrastructure",
+      "item": [
+        {
+          "name": "API Gateway Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gatewayBaseUrl}}/actuator/health"
+          },
+          "response": []
+        },
+        {
+          "name": "Eureka Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{eurekaBaseUrl}}/eureka/apps"
+          },
+          "response": []
+        },
+        {
+          "name": "Greeting Config BR",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{configServerBaseUrl}}/greeting-service/br"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
