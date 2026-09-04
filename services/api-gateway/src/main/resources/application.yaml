@@ -5,6 +5,21 @@ spring:
     gateway:
       server:
         webflux:
+            globalcors:
+              add-to-simple-url-handler-mapping: true
+              cors-configurations:
+                '[/**]':
+                  allowedOrigins:
+                    - "*"
+                  allowedMethods:
+                    - GET
+                    - POST
+                    - PUT
+                    - PATCH
+                    - DELETE
+                    - OPTIONS
+                  allowedHeaders:
+                    - "*"
             routes:
               - id: book-service
                 uri: lb://book-service-microsservice
@@ -12,17 +27,31 @@ spring:
                   - Path=/book-service-microsservice/**
                 filters:
                   - StripPrefix=1
+              - id: book-service-short-path
+                uri: lb://book-service-microsservice
+                predicates:
+                  - Path=/book-service/**
               - id: exchange-service
                 uri: lb://exchange-service-microsservice
                 predicates:
                   - Path=/exchange-service-microsservice/**
                 filters:
                   - StripPrefix=1
+              - id: exchange-service-short-path
+                uri: lb://exchange-service-microsservice
+                predicates:
+                  - Path=/exchange-service/**
 #          discovery:
 #            locator:
 #              enabled: true
 #              lower-case-service-id: true
-
+springdoc:
+  swagger-ui:
+    urls:
+      - name: Book Service
+        url: /book-service-microsservice/v3/api-docs
+      - name: Exchange Service
+        url: /exchange-service-microsservice/v3/api-docs
 server:
   port: 8765
 eureka:
