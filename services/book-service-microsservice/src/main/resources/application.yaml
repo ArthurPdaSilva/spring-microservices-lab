@@ -28,3 +28,13 @@ resilience4j:
       foo-bar:
         max-attempts: 3
         wait-duration: 1s
+  rate-limiter:
+    instances:
+      foo-bar:
+        limit-for-period: 2
+        limit-refresh-period: 10s
+  bulkhead:
+    instances:
+      foo-bar:
+        max-concurrent-calls: 2
+        max-wait-duration: 1s

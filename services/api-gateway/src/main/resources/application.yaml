@@ -5,10 +5,24 @@ spring:
     gateway:
       server:
         webflux:
-          discovery:
-            locator:
-              enabled: true
-              lower-case-service-id: true
+            routes:
+              - id: book-service
+                uri: lb://book-service-microsservice
+                predicates:
+                  - Path=/book-service-microsservice/**
+                filters:
+                  - StripPrefix=1
+              - id: exchange-service
+                uri: lb://exchange-service-microsservice
+                predicates:
+                  - Path=/exchange-service-microsservice/**
+                filters:
+                  - StripPrefix=1
+#          discovery:
+#            locator:
+#              enabled: true
+#              lower-case-service-id: true
+
 server:
   port: 8765
 eureka:
