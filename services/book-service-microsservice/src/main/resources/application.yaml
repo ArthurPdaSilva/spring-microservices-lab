@@ -22,3 +22,9 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8671/eureka/}
+resilience4j:
+  retry:
+    instances:
+      foo-bar:
+        max-attempts: 3
+        wait-duration: 1s

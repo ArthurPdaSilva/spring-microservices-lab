@@ -1,0 +1,29 @@
+package br.com.estudos.bookservicemicrosservice.controllers;
+
+import io.github.resilience4j.retry.annotation.Retry;
+import org.slf4j.Logger;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+@RestController
+@RequestMapping("/book-service")
+public class FooBarController {
+    private Logger logger = org.slf4j.LoggerFactory.getLogger(FooBarController.class);
+
+    @GetMapping("/foo-bar")
+    @Retry(name = "foo-bar")
+    public String fooBar() {
+        logger.info("Request to foo-bar endpoint received");
+
+        // Simulating a call to another service using RestTemplate
+        var response = new RestTemplate().getForEntity(
+                "http://localhost:8080/foo-bar",
+                String.class
+        );
+
+        return response.getBody();
+        //return "Foo Bar";
+    }
+}
