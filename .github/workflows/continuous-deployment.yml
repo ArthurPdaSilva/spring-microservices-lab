@@ -42,3 +42,6 @@ jobs:
     - name: Build Book Service Docker Image
       run: |
         docker build --build-arg SERVICE_DIR=services/book-service-microsservice -t spring-microservices-lab-book-service:latest -f Dockerfile .
+
+    - name: Build Docker Compose Services
+      run: docker compose build
