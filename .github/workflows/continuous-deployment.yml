@@ -1,47 +1,55 @@
-name: Microsservices Continuous Deployment with Github Actions
+name: Microservices Continuous Delivery
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+
+permissions:
+  contents: read
 
 jobs:
-
-  build:
-
+  build-and-push:
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: services/naming-server
+            image: spring-microservices-lab-naming-server
+
+          - service: services/api-gateway
+            image: spring-microservices-lab-api-gateway
+
+          - service: services/exchange-service-microsservice
+            image: spring-microservices-lab-exchange-service
+
+          - service: services/book-service-microsservice
+            image: spring-microservices-lab-book-service
+
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Login to Docker Hub
-      uses: docker/login-action@v4
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Set up  JDK 21
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'adopt'
-        java-version: '21'
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
 
-    - name: Build Eureka Naming Server Docker Image
-      run: |
-        docker build --build-arg SERVICE_DIR=services/naming-server -t spring-microservices-lab-naming-server:latest -f Dockerfile .
-
-    - name: Build API Gateway Docker Image
-      run: |
-        docker build --build-arg SERVICE_DIR=services/api-gateway -t spring-microservices-lab-api-gateway:latest -f Dockerfile .
-
-    - name: Build Exchange Service Docker Image
-      run: |
-        docker build --build-arg SERVICE_DIR=services/exchange-service-microsservice -t spring-microservices-lab-exchange-service:latest -f Dockerfile .
-
-    - name: Build Book Service Docker Image
-      run: |
-        docker build --build-arg SERVICE_DIR=services/book-service-microsservice -t spring-microservices-lab-book-service:latest -f Dockerfile .
-
-    - name: Build Docker Compose Services
-      run: docker compose build
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          build-args: |
+            SERVICE_DIR=${{ matrix.service }}
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/${{ matrix.image }}:latest
+            ${{ secrets.DOCKER_USERNAME }}/${{ matrix.image }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
