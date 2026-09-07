@@ -1,4 +1,4 @@
-name: Microsservices Continuos Deployment with Github Actions
+name: Microsservices Continuous Deployment with Github Actions
 
 on:
   push:
