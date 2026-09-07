@@ -30,3 +30,15 @@ jobs:
     - name: Build Eureka Naming Server Docker Image
       run: |
         docker build --build-arg SERVICE_DIR=services/naming-server -t spring-microservices-lab-naming-server:latest -f Dockerfile .
+
+    - name: Build API Gateway Docker Image
+      run: |
+        docker build --build-arg SERVICE_DIR=services/api-gateway -t spring-microservices-lab-api-gateway:latest -f Dockerfile .
+
+    - name: Build Exchange Service Docker Image
+      run: |
+        docker build --build-arg SERVICE_DIR=services/exchange-service-microsservice -t spring-microservices-lab-exchange-service:latest -f Dockerfile .
+
+    - name: Build Book Service Docker Image
+      run: |
+        docker build --build-arg SERVICE_DIR=services/book-service-microsservice -t spring-microservices-lab-book-service:latest -f Dockerfile .
