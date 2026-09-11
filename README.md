@@ -1,42 +1,27 @@
 # Spring Microservices Lab
 
-Laboratorio de arquitetura de microsservicos com Java 21, Spring Boot 4, Spring Cloud, service discovery, API Gateway, balanceamento de carga, observabilidade distribuida e persistencia relacional.
+Laboratorio de arquitetura de microsservicos com Java 21, Spring Boot 4, Spring Cloud, API Gateway, Docker, Kubernetes e persistencia relacional.
 
-O repositorio reune projetos de estudo antes separados e mantem cada aplicacao com `pom.xml` e Maven Wrapper independentes. A composicao principal executa duas instancias dos servicos de livros e cambio para demonstrar descoberta e distribuicao de requisicoes em um ambiente Docker.
+O repositorio reune projetos de estudo antes separados e mantem cada aplicacao com `pom.xml` e Maven Wrapper independentes. A descoberta e o balanceamento entre instancias ficam sob responsabilidade dos Services do Kubernetes; no Compose local, os servicos usam os nomes DNS da rede Docker.
 
 Repositorio: [github.com/ArthurPdaSilva/spring-microservices-lab](https://github.com/ArthurPdaSilva/spring-microservices-lab)
 
 ## Arquitetura Ativa
 
 ```text
-                         +---------------------+
-                         | Zipkin :9411        |
-                         | tracing distribuido |
-                         +----------^----------+
-                                    |
-Cliente --> API Gateway :8765 ------+------> Eureka :8671
-               |                    |
-               | lb://book-service-microsservice
-               v
-        +------+------+                 +-------------+
-        |             |                 |             |
-     Book :8100    Book :8101 -----> Exchange :8000  Exchange :8001
-        |             |       OpenFeign/Eureka       |
-        +------+------+                 +-------------+
-               |                              |
-               +------------ MySQL :3306 -----+
+Cliente --> API Gateway :8765 --> Book Service :8100 --> Exchange Service :8000
+                                     |                         |
+                                     +------ MySQL :3306 ------+
 ```
 
-O fluxo principal recebe a chamada no Gateway, localiza uma instancia do Book Service pelo Eureka e distribui a requisicao entre as portas `8100` e `8101`. O Book consulta o livro no MySQL e chama o Exchange Service via OpenFeign e service discovery, com balanceamento entre as portas `8000` e `8001`.
+O fluxo principal recebe a chamada no Gateway, encaminha para o Book Service e consulta o Exchange Service via OpenFeign. As URLs usam defaults locais e podem ser substituidas pelos nomes DNS dos Services do Kubernetes.
 
 ## Stack
 
 - Java 21, Spring Boot 4.1.1 e Spring Cloud 2025.1.3.
-- Spring Cloud Gateway WebFlux e Netflix Eureka.
-- Spring Cloud OpenFeign e Spring Cloud LoadBalancer.
+- Spring Cloud Gateway WebFlux e Spring Cloud OpenFeign.
 - Spring Data JPA, MySQL 8.4 e Flyway.
-- Spring Actuator e Micrometer Tracing com Brave.
-- OpenZipkin Zipkin para coleta e visualizacao de traces.
+- Spring Actuator para endpoints operacionais e health checks.
 - Springdoc OpenAPI 3.1.0 com Swagger UI agregado no Gateway.
 - Resilience4j no laboratorio do Book Service.
 - Docker Compose e Maven Wrapper.
@@ -47,17 +32,15 @@ O fluxo principal recebe a chamada no Gateway, localiza uma instancia do Book Se
 | Servico | Porta | Papel |
 |---|---:|---|
 | `api-gateway` | 8765 | Ponto de entrada, roteamento, balanceamento, CORS e Swagger agregado. |
-| `naming-server` | 8671 | Registro e descoberta de servicos com Eureka. |
-| `book-service-microsservice` | 8100 e 8101 | Consulta livros e calcula precos convertidos por meio do Exchange Service. |
-| `exchange-service-microsservice` | 8000 e 8001 | Consulta fatores de cambio e calcula valores convertidos. |
+| `book-service-microsservice` | 8100 | Consulta livros e calcula precos convertidos por meio do Exchange Service. |
+| `exchange-service-microsservice` | 8000 | Consulta fatores de cambio e calcula valores convertidos. |
 | `mysql` | 3306 | Persiste livros e taxas de cambio no schema compartilhado `microservice_section_7`. |
-| `zipkin` | 9411 | Recebe e apresenta os traces distribuidos dos servicos ativos. |
 
 O Config Server, Greeting Service, PostgreSQL, RabbitMQ e o fluxo User/Email permanecem no monorepo, mas estao comentados no `docker-compose.yml` principal e nao sobem no comando padrao.
 
 ## Gateway e Rotas
 
-O Gateway usa rotas declarativas e URIs `lb://` resolvidas pelo Eureka:
+O Gateway usa rotas declarativas e URLs configuraveis por `BOOK_SERVICE_URL` e `EXCHANGE_SERVICE_URL`:
 
 | Rota externa | Destino | Transformacao |
 |---|---|---|
@@ -73,7 +56,7 @@ curl http://localhost:8765/book-service/2/BRL
 curl "http://localhost:8765/exchange-service?amount=10&from=USD&to=BRL"
 ```
 
-As respostas incluem as portas das instancias envolvidas, permitindo observar o balanceamento de carga entre os containers.
+As respostas incluem o hostname e a porta das instancias envolvidas, permitindo identificar os Pods que atenderam cada trecho da requisicao no Kubernetes.
 
 ## Swagger e CORS
 
@@ -84,16 +67,6 @@ O Gateway agrega os documentos OpenAPI do Book e do Exchange Service. As URLs de
 - Exchange OpenAPI: [localhost:8765/exchange-service-microsservice/v3/api-docs](http://localhost:8765/exchange-service-microsservice/v3/api-docs)
 
 O CORS global do Gateway permite todas as origens, headers e os metodos `GET`, `POST`, `PUT`, `PATCH`, `DELETE` e `OPTIONS`. Essa politica e adequada ao laboratorio local e deve ser restringida antes de uma exposicao publica.
-
-## Observabilidade com Zipkin
-
-Gateway, Naming Server, Book e Exchange usam `spring-boot-starter-zipkin`, sampling de `100%` no ambiente de estudo e exportacao para `/api/v2/spans`.
-
-- Interface: [localhost:9411](http://localhost:9411)
-- Servicos esperados: `api-gateway`, `naming-server`, `book-service-microsservice` e `exchange-service-microsservice`.
-- Logs das aplicacoes incluem `traceId` e `spanId` para correlacao com os spans do Zipkin.
-
-Dentro do Docker, o endpoint e configurado como `http://zipkin:9411/api/v2/spans`. Na execucao local, o fallback usa `http://localhost:9411/api/v2/spans`.
 
 ## Persistencia
 
@@ -125,7 +98,6 @@ spring-microservices-lab/
   docs/                                # Arquitetura e guia de execucao local
   services/
     api-gateway/                       # Gateway WebFlux e Swagger agregado
-    naming-server/                     # Eureka Server
     book-service-microsservice/        # Livros, OpenFeign e Resilience4j
     exchange-service-microsservice/    # Cambio, JPA e Flyway
     spring-cloud-config-server/        # Config Server nativo/Git
@@ -138,7 +110,7 @@ spring-microservices-lab/
 
 ## Execucao Rapida
 
-Pre-requisitos: Docker com Compose e portas `3306`, `8000`, `8001`, `8100`, `8101`, `8671`, `8765` e `9411` livres.
+Pre-requisitos: Docker com Compose e portas `3306`, `8000`, `8100` e `8765` livres.
 
 ```bash
 docker compose up -d --build
@@ -152,10 +124,8 @@ docker compose ps
 
 Interfaces principais:
 
-- Eureka: [localhost:8671](http://localhost:8671)
 - API Gateway: [localhost:8765](http://localhost:8765)
 - Swagger UI: [localhost:8765/swagger-ui.html](http://localhost:8765/swagger-ui.html)
-- Zipkin: [localhost:9411](http://localhost:9411)
 
 Para encerrar:
 
@@ -187,5 +157,5 @@ Consulte o guia detalhado em [`docs/running-locally.md`](docs/running-locally.md
 ## Observacoes
 
 - Este e um laboratorio educacional, nao um build Maven multi-module nem uma arquitetura pronta para producao.
-- O sampling de traces em `1.0` e o CORS aberto foram escolhidos para facilitar testes locais.
+- O CORS aberto foi escolhido para facilitar testes locais e deve ser restringido em producao.
 - Credenciais reais devem permanecer em variaveis de ambiente ou arquivos `.env` locais nao versionados.

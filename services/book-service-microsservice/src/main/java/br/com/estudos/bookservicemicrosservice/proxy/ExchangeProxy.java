@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.math.BigDecimal;
 
 
-@FeignClient(name = "exchange-service-microsservice")
+@FeignClient(name = "exchange-service", url = "${EXCHANGE_SERVICE_URL:http://localhost:8000}")
 public interface ExchangeProxy {
     @GetMapping("/exchange-service")
     public ExchangeResponseDTO getExchange(

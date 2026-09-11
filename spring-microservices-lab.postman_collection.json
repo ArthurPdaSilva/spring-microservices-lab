@@ -32,11 +32,6 @@
       "type": "string"
     },
     {
-      "key": "eurekaBaseUrl",
-      "value": "http://localhost:8671",
-      "type": "string"
-    },
-    {
       "key": "configServerBaseUrl",
       "value": "http://localhost:8888",
       "type": "string"
@@ -70,7 +65,7 @@
   "item": [
     {
       "name": "API Gateway",
-      "description": "Rotas criadas automaticamente pelo Discovery Locator. Aguarde o Eureka atualizar antes da primeira chamada.",
+      "description": "Rotas declarativas do Gateway para os servicos de Book e Exchange.",
       "item": [
         {
           "name": "Book Service via Gateway",
@@ -98,7 +93,7 @@
               }
             ],
             "url": "{{gatewayBaseUrl}}/exchange-service-microsservice/exchange-service?amount={{amount}}&from={{fromCurrency}}&to={{toCurrency}}",
-            "description": "Converte um valor por meio da rota descoberta no Eureka."
+            "description": "Converte um valor por meio da rota declarativa do Gateway."
           },
           "response": []
         }
@@ -243,20 +238,6 @@
             "method": "GET",
             "header": [],
             "url": "{{gatewayBaseUrl}}/actuator/health"
-          },
-          "response": []
-        },
-        {
-          "name": "Eureka Applications",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{eurekaBaseUrl}}/eureka/apps"
           },
           "response": []
         },

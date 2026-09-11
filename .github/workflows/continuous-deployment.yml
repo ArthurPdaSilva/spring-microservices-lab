@@ -15,9 +15,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - service: services/naming-server
-            image: spring-microservices-lab-naming-server
-
           - service: services/api-gateway
             image: spring-microservices-lab-api-gateway
 

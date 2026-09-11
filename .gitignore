@@ -18,4 +18,5 @@ replay_pid*
 mysql_data/
 postgres_data/
 rabbitmq_data/
+services/naming-server/
 *.pid

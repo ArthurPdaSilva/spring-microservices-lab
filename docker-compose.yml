@@ -17,12 +17,6 @@ services:
       timeout: 5s
       retries: 10
 
-  zipkin:
-    image: openzipkin/zipkin
-    container_name: spring-microservices-lab-zipkin
-    ports:
-      - "9411:9411"
-
 #  postgres:
 #    image: postgres:17
 #    container_name: spring-microservices-lab-postgres
@@ -69,21 +63,6 @@ services:
 #    volumes:
 #      - ./config-repo/spring-config-server:/config-repo:ro
 
-  naming-server:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        SERVICE_DIR: services/naming-server
-    container_name: spring-microservices-lab-naming-server
-    environment:
-      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
-    ports:
-      - "8671:8671"
-    depends_on:
-      zipkin:
-        condition: service_started
-
   api-gateway:
     build:
       context: .
@@ -92,14 +71,14 @@ services:
         SERVICE_DIR: services/api-gateway
     container_name: spring-microservices-lab-api-gateway
     environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://naming-server:8671/eureka/
-      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
+      BOOK_SERVICE_URL: http://book-service:8100
+      EXCHANGE_SERVICE_URL: http://exchange-service:8000
     ports:
       - "8765:8765"
     depends_on:
-      naming-server:
+      book-service:
         condition: service_started
-      zipkin:
+      exchange-service:
         condition: service_started
 
 #  greeting-service:
@@ -132,44 +111,11 @@ services:
       SPRING_FLYWAY_TABLE: flyway_schema_history_exchange
       SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
       SPRING_FLYWAY_BASELINE_VERSION: "0"
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://naming-server:8671/eureka/
-      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
     ports:
       - "8000:8000"
     depends_on:
       mysql:
         condition: service_healthy
-      naming-server:
-        condition: service_started
-      zipkin:
-        condition: service_started
-
-  exchange-service-2:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        SERVICE_DIR: services/exchange-service-microsservice
-    container_name: spring-microservices-lab-exchange-service-2
-    environment:
-      SERVER_PORT: 8001
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/microservice_section_7
-      SPRING_DATASOURCE_USERNAME: spring
-      SPRING_DATASOURCE_PASSWORD: spring
-      SPRING_FLYWAY_TABLE: flyway_schema_history_exchange
-      SPRING_FLYWAY_BASELINE_ON_MIGRATE: "true"
-      SPRING_FLYWAY_BASELINE_VERSION: "0"
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://naming-server:8671/eureka/
-      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
-    ports:
-      - "8001:8001"
-    depends_on:
-      mysql:
-        condition: service_healthy
-      naming-server:
-        condition: service_started
-      zipkin:
-        condition: service_started
 
   book-service:
     build:
@@ -184,46 +130,12 @@ services:
       SPRING_DATASOURCE_USERNAME: spring
       SPRING_DATASOURCE_PASSWORD: spring
       EXCHANGE_SERVICE_URL: http://exchange-service:8000
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://naming-server:8671/eureka/
-      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
     ports:
       - "8100:8100"
     depends_on:
       mysql:
         condition: service_healthy
       exchange-service:
-        condition: service_started
-      naming-server:
-        condition: service_started
-      zipkin:
-        condition: service_started
-
-  book-service-2:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        SERVICE_DIR: services/book-service-microsservice
-    container_name: spring-microservices-lab-book-service-2
-    environment:
-      SERVER_PORT: 8101
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/microservice_section_7
-      SPRING_DATASOURCE_USERNAME: spring
-      SPRING_DATASOURCE_PASSWORD: spring
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://naming-server:8671/eureka/
-      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
-    ports:
-      - "8101:8101"
-    depends_on:
-      mysql:
-        condition: service_healthy
-      exchange-service:
-        condition: service_started
-      exchange-service-2:
-        condition: service_started
-      naming-server:
-        condition: service_started
-      zipkin:
         condition: service_started
 
 #  user-service:

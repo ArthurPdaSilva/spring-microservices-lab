@@ -38,7 +38,6 @@ public class ExchangeService {
                 exchange.getTo(),
                 exchange.getConversionFactor(),
                 amount.multiply(exchange.getConversionFactor()).doubleValue(),
-                String.valueOf(instanceInformationService.getPort())
-        );
+                "HOST: " + instanceInformationService.getHostName() + " | KUBE PORT: " + instanceInformationService.getPort()        );
     }
 }

@@ -16,9 +16,9 @@ Para subir todos os servicos e a infraestrutura pela raiz do monorepo:
 docker compose up --build
 ```
 
-Isso cria imagens para os servicos Spring Boot usando o `Dockerfile` raiz e sobe MySQL, PostgreSQL e RabbitMQ.
+Isso cria imagens para os servicos Spring Boot usando o `Dockerfile` raiz e sobe a infraestrutura habilitada no Compose.
 
-O `book-service` e o `exchange-service` usam `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://naming-server:8671/eureka/` no Compose para registrar no Eureka dentro da rede Docker. Sem essa variavel, o fallback `localhost:8671` aponta para o proprio container do servico, nao para o container do Eureka.
+O Gateway e o Book Service usam URLs configuraveis. No Compose, `BOOK_SERVICE_URL` e `EXCHANGE_SERVICE_URL` apontam para os nomes DNS da rede Docker; na execucao direta, os fallbacks apontam para `localhost`.
 
 Se o MySQL ja tiver sido criado antes das migrations do Flyway, pode ocorrer erro de schema nao vazio sem tabela de historico. O `exchange-service` usa `baseline-on-migrate=true`, `baseline-version=0` e a tabela `flyway_schema_history_exchange` para conseguir iniciar nesse cenario. Se quiser reiniciar tudo do zero, remova os containers e volumes:
 
