@@ -252,6 +252,8 @@ spec:
               value: http://book-service:8100
             - name: EXCHANGE_SERVICE_URL
               value: http://exchange-service:8000
+            - name: CHAT_SERVICE_URL
+              value: http://chat-service:8080
           startupProbe:
             httpGet:
               path: /actuator/health/liveness

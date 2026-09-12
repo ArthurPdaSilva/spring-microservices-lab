@@ -41,6 +41,12 @@ spring:
                 uri: ${EXCHANGE_SERVICE_URL:http://localhost:8000}
                 predicates:
                   - Path=/exchange-service/**
+              - id: chat-service
+                uri: ${CHAT_SERVICE_URL:http://localhost:8080}
+                predicates:
+                  - Path=/chat-service/**
+                filters:
+                  - StripPrefix=1
 #          discovery:
 #            locator:
 #              enabled: true
