@@ -24,6 +24,9 @@ jobs:
           - service: services/book-service-microsservice
             image: spring-microservices-lab-book-service
 
+          - service: services/chat-service-microsservice
+            image: spring-microservices-lab-chat-service
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

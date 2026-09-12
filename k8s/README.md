@@ -6,6 +6,7 @@ Os manifests em `kubernetes-services.yml` criam:
 - Exchange Service com Service `ClusterIP`.
 - Book Service com Service `ClusterIP`.
 - API Gateway com Service `LoadBalancer`.
+- Chat Service com Service `ClusterIP` e credenciais da OpenAI via Secret.
 - Probes de startup, readiness e liveness.
 
 ## Credenciais do MySQL
@@ -21,6 +22,19 @@ kubectl create secret generic mysql-credentials \
 ```
 
 Os valores acima sao apenas para o ambiente local de estudo.
+
+## Credenciais da OpenAI
+
+Crie o Secret da OpenAI sem armazenar a chave no repositorio:
+
+```bash
+kubectl create secret generic openai-credentials \
+  --from-literal=api-key='<OPENAI_API_KEY>' \
+  --from-literal=api-url='https://api.openai.com/v1/responses' \
+  --dry-run=client -o yaml | kubectl apply -f -
+```
+
+O Deployment injeta esses valores como `OPENAI_API_KEY` e `OPENAI_API_URL` no container do Chat Service.
 
 ## Aplicacao
 
@@ -46,6 +60,7 @@ kubectl rollout status deployment/mysql --timeout=180s
 kubectl rollout status deployment/exchange-service --timeout=180s
 kubectl rollout status deployment/book-service --timeout=180s
 kubectl rollout status deployment/api-gateway --timeout=180s
+kubectl rollout status deployment/chat-service --timeout=180s
 ```
 
 Verifique os recursos:
@@ -54,7 +69,7 @@ Verifique os recursos:
 kubectl get pods,services,persistentvolumeclaims
 ```
 
-O Gateway fica disponivel na porta `8765` do Load Balancer. Book, Exchange e MySQL sao acessiveis apenas dentro do cluster pelos nomes `book-service`, `exchange-service` e `mysql`.
+O Gateway fica disponivel na porta `8765` do Load Balancer. Book, Exchange, Chat e MySQL sao acessiveis apenas dentro do cluster pelos nomes `book-service`, `exchange-service`, `chat-service` e `mysql`.
 
 Em ambientes que nao provisionam Load Balancers automaticamente, use:
 
