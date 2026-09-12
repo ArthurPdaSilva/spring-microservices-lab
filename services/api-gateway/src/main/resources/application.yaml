@@ -58,6 +58,8 @@ springdoc:
         url: /book-service-microsservice/v3/api-docs
       - name: Exchange Service
         url: /exchange-service-microsservice/v3/api-docs
+      - name: Chat Service
+        url: /chat-service/v3/api-docs
 server:
   port: 8765
 management:
