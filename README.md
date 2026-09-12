@@ -96,6 +96,7 @@ O fluxo assincrono implementa cadastro de usuario, persistencia em PostgreSQL, p
 spring-microservices-lab/
   config-repo/spring-config-server/    # Configuracoes externas por aplicacao e perfil
   docs/                                # Arquitetura e guia de execucao local
+  k8s/                                 # Deployments e Services do Kubernetes
   services/
     api-gateway/                       # Gateway WebFlux e Swagger agregado
     book-service-microsservice/        # Livros, OpenFeign e Resilience4j

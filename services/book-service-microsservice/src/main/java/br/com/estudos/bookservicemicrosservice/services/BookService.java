@@ -17,8 +17,7 @@ import java.math.BigDecimal;
 @Service
 public class BookService {
 
-    @Autowired
-    private Logger logger = LoggerFactory.getLogger(BookService.class);
+    private final Logger logger = LoggerFactory.getLogger(BookService.class);
 
     @Autowired
     private InstanceInformationService instanceInformationService;
